@@ -94,7 +94,7 @@ const Navbar: React.FC = () => {
         },
         {
           title: 'Top Rated Gifts',
-          links: ['Mini Size', 'Only at BeautyBloom', 'Luxury Gifts', 'The Luxury Guide']
+          links: ['Mini Size', 'Only at Nycha Beauty', 'Luxury Gifts', 'The Luxury Guide']
         },
         {
           title: 'By Price',
@@ -269,7 +269,7 @@ const Navbar: React.FC = () => {
 
             {/* Logo */}
             <Link to="/" className="flex-shrink-0 lg:mx-0 mx-auto">
-              <span className="text-xl md:text-2xl font-bold tracking-widest">BEAUTYBLOOM</span>
+              <span className="text-xl md:text-2xl font-bold tracking-widest">Nycha Beauty</span>
             </Link>
 
             {/* Desktop Search Bar */}

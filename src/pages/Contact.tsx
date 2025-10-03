@@ -47,10 +47,10 @@ const Contact: React.FC = () => {
               <h3 className="text-xl font-bold text-gray-900 mb-2">Email Us</h3>
               <p className="text-gray-600 mb-2">Our team is here to help</p>
               <a
-                href="mailto:support@beautybloom.com"
+                href="mailto:support@Nycha Beauty.com"
                 className="text-rose-500 hover:text-rose-600 font-medium"
               >
-                support@beautybloom.com
+                support@Nycha Beauty.com
               </a>
             </div>
 

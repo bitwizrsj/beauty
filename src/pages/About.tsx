@@ -8,7 +8,7 @@ const About: React.FC = () => {
         <div className="absolute inset-0 bg-black opacity-10"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-center text-center">
           <div>
-            <h1 className="text-5xl md:text-6xl font-bold mb-6">About BeautyBloom</h1>
+            <h1 className="text-5xl md:text-6xl font-bold mb-6">About Nycha Beauty</h1>
             <p className="text-xl text-rose-50 max-w-3xl mx-auto">
               Empowering natural beauty through premium, sustainable products
             </p>
@@ -23,7 +23,7 @@ const About: React.FC = () => {
               <h2 className="text-4xl font-bold text-gray-900 mb-6">Our Story</h2>
               <div className="space-y-4 text-lg text-gray-700 leading-relaxed">
                 <p>
-                  BeautyBloom was founded in 2020 with a simple mission: to create beauty products
+                  Nycha Beauty was founded in 2020 with a simple mission: to create beauty products
                   that enhance natural beauty while respecting both people and planet.
                 </p>
                 <p>

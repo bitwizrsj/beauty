@@ -68,7 +68,7 @@ const Login: React.FC = () => {
               <Heart className="w-7 h-7 text-white fill-white" />
             </div>
             <span className="text-3xl font-bold bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">
-              BeautyBloom
+              Nycha Beauty
             </span>
           </Link>
 

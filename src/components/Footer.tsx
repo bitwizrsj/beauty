@@ -12,7 +12,7 @@ const Footer: React.FC = () => {
               <div className="w-10 h-10 bg-gradient-to-br from-rose-400 to-pink-500 rounded-full flex items-center justify-center">
                 <Heart className="w-6 h-6 text-white fill-white" />
               </div>
-              <span className="text-2xl font-bold">BeautyBloom</span>
+              <span className="text-2xl font-bold">Nycha Beauty</span>
             </div>
             <p className="text-gray-400 mb-4">
               Your destination for premium beauty products that celebrate natural beauty and self-care.
@@ -117,7 +117,7 @@ const Footer: React.FC = () => {
         </div>
 
         <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-          <p>&copy; 2025 BeautyBloom. All rights reserved.</p>
+          <p>&copy; 2025 Nycha Beauty. All rights reserved.</p>
           <div className="flex justify-center space-x-6 mt-4">
             <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
             <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
