@@ -1,6 +1,8 @@
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+// const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+const BASE_URL = import.meta.env.VITE_API_URL || 'https://beauty-eight-tau.vercel.app/';
 
 function getAuthToken(): string | null {
 	try {
