@@ -221,6 +221,15 @@ const Navbar: React.FC = () => {
                     <Link to="/orders" className="block px-4 py-2 text-sm hover:bg-gray-50">
                       My Orders
                     </Link>
+                    {user && (user as any).role === 'admin' && (
+                      <>
+                        <div className="border-t my-1" />
+                        <Link to="/admin" className="block px-4 py-2 text-sm hover:bg-gray-50">Admin Dashboard</Link>
+                        <Link to="/admin/products" className="block px-4 py-2 text-sm hover:bg-gray-50">Manage Products</Link>
+                        <Link to="/admin/orders" className="block px-4 py-2 text-sm hover:bg-gray-50">Manage Orders</Link>
+                        <Link to="/admin/users" className="block px-4 py-2 text-sm hover:bg-gray-50">Manage Users</Link>
+                      </>
+                    )}
                     <button onClick={handleSignOut} className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50">
                       Sign Out
                     </button>

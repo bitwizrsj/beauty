@@ -14,8 +14,30 @@ import Contact from './pages/Contact';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
 import Orders from './pages/Orders';
+import AdminDashboard from './pages/admin/Dashboard';
+import AdminProducts from './pages/admin/Products';
+import AdminCategories from './pages/admin/Categories';
+import AdminUsers from './pages/admin/Users';
+import AdminOrders from './pages/admin/Orders';
+import { useAuth } from './contexts/AuthContext';
 
 function App() {
+  const AdminRoutes: React.FC = () => {
+    const { user } = useAuth();
+    if (!user || user.role !== 'admin') {
+      return <div className="max-w-7xl mx-auto px-4 py-8">Not authorized</div>;
+    }
+    return (
+      <Routes>
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/products" element={<AdminProducts />} />
+        <Route path="/admin/categories" element={<AdminCategories />} />
+        <Route path="/admin/users" element={<AdminUsers />} />
+        <Route path="/admin/orders" element={<AdminOrders />} />
+      </Routes>
+    );
+  };
+
   return (
     <Router>
       <AuthProvider>
@@ -34,6 +56,7 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/orders" element={<Orders />} />
+                <Route path="/*" element={<AdminRoutes />} />
               </Routes>
             </main>
             <Footer />

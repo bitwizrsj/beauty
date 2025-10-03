@@ -1,40 +1,42 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Package, Calendar, CreditCard, ShoppingBag } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { OrdersAPI } from '../lib/api';
 
 const Orders: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  if (!user) {
-    navigate('/login');
-    return null;
-  }
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const orders = [
-    {
-      id: 'ORD-2025-001',
-      date: '2025-01-20',
-      status: 'Delivered',
-      total: 124.99,
-      items: 3,
-      products: [
-        {
-          name: 'Radiance Vitamin C Serum',
-          image: 'https://images.pexels.com/photos/3685523/pexels-photo-3685523.jpeg?auto=compress&cs=tinysrgb&w=800',
-          quantity: 1,
-          price: 48.00,
-        },
-        {
-          name: 'Hydrating Rose Water Mist',
-          image: 'https://images.pexels.com/photos/4041392/pexels-photo-4041392.jpeg?auto=compress&cs=tinysrgb&w=800',
-          quantity: 2,
-          price: 24.00,
-        },
-      ],
-    },
-  ];
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    const load = async () => {
+      try {
+        setLoading(true);
+        const res = await OrdersAPI.myOrders();
+        // map to UI structure
+        const mapped = res.data.orders.map((o: any) => ({
+          id: o._id,
+          date: o.createdAt,
+          status: o.orderStatus,
+          total: o.totalPrice,
+          products: o.orderItems.map((i: any) => ({ name: i.name, image: i.image, quantity: i.quantity, price: i.price }))
+        }));
+        setOrders(mapped);
+      } catch (e) {
+        setOrders([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [user, navigate]);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -44,7 +46,12 @@ const Orders: React.FC = () => {
           <p className="text-gray-600 mt-2">View and track your order history</p>
         </div>
 
-        {orders.length === 0 ? (
+        {loading ? (
+          <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+            <ShoppingBag className="w-24 h-24 text-gray-300 mx-auto mb-6" />
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Loading your orders...</h2>
+          </div>
+        ) : orders.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm p-12 text-center">
             <ShoppingBag className="w-24 h-24 text-gray-300 mx-auto mb-6" />
             <h2 className="text-3xl font-bold text-gray-900 mb-4">No orders yet</h2>
@@ -98,7 +105,7 @@ const Orders: React.FC = () => {
 
                 <div className="p-6">
                   <div className="space-y-4">
-                    {order.products.map((product, index) => (
+                    {order.products.map((product: any, index: number) => (
                       <div key={index} className="flex items-center space-x-4">
                         <img
                           src={product.image}

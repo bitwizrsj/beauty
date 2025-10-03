@@ -1,12 +1,71 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Sparkles, ShieldCheck, Truck } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
-import { products } from '../data/products';
+import { CatalogAPI } from '../lib/api';
 
 const Home: React.FC = () => {
-  const featuredProducts = products.filter(p => p.featured);
-  const trendingProducts = products.filter(p => p.trending);
+  const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
+  const [trendingProducts, setTrendingProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
+        const [featured, allProducts] = await Promise.all([
+          CatalogAPI.featured(),
+          CatalogAPI.listProducts({ limit: 20 })
+        ]);
+        
+        // Map featured products
+        const mappedFeatured = featured.data.products.map(p => ({
+          id: p._id,
+          name: p.name,
+          price: p.price,
+          images: (p.images || []).map((img: any) => img.url).filter(Boolean),
+          brand: p.brand || 'Brand',
+          rating: p.rating || 0,
+          reviews: p.numReviews || 0,
+          category: p.category?.name || 'All',
+          originalPrice: p.compareAtPrice,
+          inStock: (p.stock || 0) > 0,
+          featured: p.isFeatured,
+          trending: false
+        }));
+        
+        // Map trending products (use top rated products as trending)
+        const mappedTrending = allProducts.data.products
+          .filter(p => !p.isFeatured) // Don't include featured products
+          .sort((a: any, b: any) => (b.rating || 0) - (a.rating || 0))
+          .slice(0, 4)
+          .map(p => ({
+            id: p._id,
+            name: p.name,
+            price: p.price,
+            images: (p.images || []).map((img: any) => img.url).filter(Boolean),
+            brand: p.brand || 'Brand',
+            rating: p.rating || 0,
+            reviews: p.numReviews || 0,
+            category: p.category?.name || 'All',
+            originalPrice: p.compareAtPrice,
+            inStock: (p.stock || 0) > 0,
+            featured: false,
+            trending: true
+          }));
+        
+        setFeaturedProducts(mappedFeatured);
+        setTrendingProducts(mappedTrending);
+      } catch (e) {
+        setFeaturedProducts([]);
+        setTrendingProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadProducts();
+  }, []);
 
   return (
     <div className="min-h-screen">
@@ -99,9 +158,19 @@ const Home: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-            {featuredProducts.map(product => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+            {loading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-xl shadow-sm p-4 animate-pulse">
+                  <div className="aspect-square bg-gray-200 rounded-lg mb-4"></div>
+                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                </div>
+              ))
+            ) : (
+              featuredProducts.map(product => (
+                <ProductCard key={product.id} product={product} />
+              ))
+            )}
           </div>
 
           <div className="text-center">
@@ -164,9 +233,19 @@ const Home: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {trendingProducts.map(product => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+            {loading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-xl shadow-sm p-4 animate-pulse">
+                  <div className="aspect-square bg-gray-200 rounded-lg mb-4"></div>
+                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                </div>
+              ))
+            ) : (
+              trendingProducts.map(product => (
+                <ProductCard key={product.id} product={product} />
+              ))
+            )}
           </div>
         </div>
       </section>

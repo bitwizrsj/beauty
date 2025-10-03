@@ -4,10 +4,23 @@ import Order from '../models/Order.js';
 import User from '../models/User.js';
 import cloudinary from '../config/cloudinary.js';
 
+import slugify from 'slugify';
+
 export const createProduct = async (req, res) => {
   try {
+    const specifications = req.body.specifications || {};
+
+    // Convert array values to strings for specifications
+    Object.keys(specifications).forEach(key => {
+      if (Array.isArray(specifications[key])) {
+        specifications[key] = specifications[key].join(', ');
+      }
+    });
+
     const product = await Product.create({
       ...req.body,
+      specifications,
+      slug: slugify(req.body.name, { lower: true, strict: true }), // <-- generate slug
       sku: `SKU-${Date.now()}`
     });
 
@@ -17,6 +30,7 @@ export const createProduct = async (req, res) => {
       data: { product }
     });
   } catch (error) {
+    console.error('Create Product Error:', error);
     res.status(500).json({
       success: false,
       message: error.message
@@ -24,11 +38,23 @@ export const createProduct = async (req, res) => {
   }
 };
 
+
 export const updateProduct = async (req, res) => {
   try {
+    const specifications = req.body.specifications || {};
+    Object.keys(specifications).forEach(key => {
+      if (Array.isArray(specifications[key])) {
+        specifications[key] = specifications[key].join(', ');
+      }
+    });
+
+    if (req.body.name) {
+      req.body.slug = slugify(req.body.name, { lower: true, strict: true });
+    }
+
     const product = await Product.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      { ...req.body, specifications },
       { new: true, runValidators: true }
     );
 
@@ -45,12 +71,14 @@ export const updateProduct = async (req, res) => {
       data: { product }
     });
   } catch (error) {
+    console.error('Update Product Error:', error);
     res.status(500).json({
       success: false,
       message: error.message
     });
   }
 };
+
 
 export const deleteProduct = async (req, res) => {
   try {

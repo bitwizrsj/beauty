@@ -2,17 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { SlidersHorizontal, X } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
-import { products, categories, brands } from '../data/products';
+import { CatalogAPI } from '../lib/api';
 
 const Shop: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const [filteredProducts, setFilteredProducts] = useState(products);
+  const [catalogProducts, setCatalogProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<string[]>(['All']);
+  const [brands, setBrands] = useState<string[]>(['All']);
+  const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedBrand, setSelectedBrand] = useState('All');
   const [priceRange, setPriceRange] = useState([0, 100]);
   const [minRating, setMinRating] = useState(0);
   const [sortBy, setSortBy] = useState('featured');
   const [showFilters, setShowFilters] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const categoryParam = searchParams.get('category');
@@ -22,10 +26,10 @@ const Shop: React.FC = () => {
       setSelectedCategory(categoryParam);
     }
 
-    let filtered = [...products];
+    let filtered = [...catalogProducts];
 
     if (categoryParam) {
-      filtered = filtered.filter(p => p.category === categoryParam);
+      filtered = filtered.filter(p => (p.category?.name || p.category) === categoryParam || p.category === categoryParam);
     }
 
     if (searchParam) {
@@ -33,8 +37,8 @@ const Shop: React.FC = () => {
       filtered = filtered.filter(
         p =>
           p.name.toLowerCase().includes(searchLower) ||
-          p.description.toLowerCase().includes(searchLower) ||
-          p.brand.toLowerCase().includes(searchLower)
+          (p.description || '').toLowerCase().includes(searchLower) ||
+          (p.brand || '').toLowerCase().includes(searchLower)
       );
     }
 
@@ -70,7 +74,44 @@ const Shop: React.FC = () => {
     }
 
     setFilteredProducts(filtered);
-  }, [searchParams, selectedCategory, selectedBrand, priceRange, minRating, sortBy]);
+  }, [searchParams, selectedCategory, selectedBrand, priceRange, minRating, sortBy, catalogProducts]);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true);
+        const [prods, cats] = await Promise.all([
+          CatalogAPI.listProducts({ limit: 100 }),
+          CatalogAPI.listCategories()
+        ]);
+        const items = prods.data.products;
+        setCatalogProducts(items.map(p => ({
+          id: p._id,
+          name: p.name,
+          price: p.price,
+          images: (p.images || []).map((img: any) => img.url).filter(Boolean),
+          brand: p.brand || 'Brand',
+          rating: p.rating || 0,
+          reviews: p.numReviews || 0,
+          category: p.category?.name || 'All',
+          originalPrice: p.compareAtPrice,
+          inStock: (p.stock || 0) > 0
+        })));
+        
+        // Use main categories from navbar mega menu for filtering
+        const mainCategories = ['All', 'Skincare', 'Makeup', 'Hair Care', 'Fragrance', 'Bath & Body', 'Tools & Brushes', 'Hair', 'Gifts & Value Sets'];
+        setCategories(mainCategories);
+        
+        const brandNames = ['All', ...new Set(items.map((p: any) => p.brand).filter(Boolean))];
+        setBrands(brandNames);
+      } catch (e) {
+        // fallback empty
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
 
   const resetFilters = () => {
     setSelectedCategory('All');
@@ -87,7 +128,7 @@ const Shop: React.FC = () => {
           <div>
             <h1 className="text-4xl font-bold text-gray-900 mb-2">Shop All Products</h1>
             <p className="text-gray-600">
-              Showing {filteredProducts.length} of {products.length} products
+              {loading ? 'Loading...' : `Showing ${filteredProducts.length} of ${catalogProducts.length} products`}
             </p>
           </div>
 

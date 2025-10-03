@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { CreditCard, Lock } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
+import { OrdersAPI } from '../lib/api';
 
 const Checkout: React.FC = () => {
   const { cart, getTotalPrice, clearCart } = useCart();
@@ -31,10 +32,38 @@ const Checkout: React.FC = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    clearCart();
-    navigate('/orders');
+    try {
+      const payload = {
+        orderItems: cart.map(item => ({
+          product: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          image: item.image,
+          price: item.price
+        })),
+        shippingAddress: {
+          fullName: `${formData.firstName} ${formData.lastName}`.trim(),
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          zipCode: formData.zipCode,
+          country: 'USA',
+          phone: formData.phone
+        },
+        paymentMethod: 'credit_card',
+        itemsPrice: Number(subtotal.toFixed(2)),
+        taxPrice: Number(tax.toFixed(2)),
+        shippingPrice: Number(shipping.toFixed(2)),
+        totalPrice: Number(total.toFixed(2))
+      };
+      await OrdersAPI.create(payload);
+      clearCart();
+      navigate('/orders');
+    } catch (err) {
+      // TODO: surface toast
+    }
   };
 
   const subtotal = getTotalPrice();

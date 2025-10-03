@@ -1,18 +1,57 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Heart, Star, Truck, ShieldCheck, RotateCcw, ChevronLeft } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
-import { products } from '../data/products';
+import { CatalogAPI } from '../lib/api';
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
-  const product = products.find(p => p.id === id);
+  const [product, setProduct] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        if (!id) return;
+        const res = await CatalogAPI.getProduct(id);
+        const p = res.data.product;
+        setProduct({
+          id: p._id,
+          name: p.name,
+          description: p.description,
+          price: p.price,
+          originalPrice: p.compareAtPrice,
+          brand: p.brand || 'Brand',
+          images: (p.images || []).map((img: any) => img.url).filter(Boolean),
+          rating: p.rating || 0,
+          reviews: p.numReviews || 0,
+          category: p.category?.name || 'All',
+          inStock: (p.stock || 0) > 0
+        });
+      } catch (e) {
+        setProduct(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [id]);
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Loading...</h2>
+        </div>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -36,7 +75,7 @@ const ProductDetail: React.FC = () => {
         id: product.id,
         name: product.name,
         price: product.price,
-        image: product.images[0],
+        image: product.images?.[0],
         category: product.category,
       });
     }

@@ -1,12 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { AuthAPI } from '../lib/api';
 
 interface User {
   id: string;
+  name: string;
   email: string;
-  user_metadata?: {
-    name?: string;
-  };
-  created_at: string;
+  role: 'user' | 'admin';
 }
 
 interface AuthContextType {
@@ -19,47 +18,56 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'auth_user';
+const USER_KEY = 'auth_user';
+const TOKEN_KEY = 'auth_token';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem(STORAGE_KEY);
-    if (savedUser) {
+    const savedUser = localStorage.getItem(USER_KEY);
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (savedUser && token) {
       setUser(JSON.parse(savedUser));
     }
     setLoading(false);
   }, []);
 
   const signUp = async (email: string, password: string, name: string) => {
-    const newUser: User = {
-      id: Math.random().toString(36).substr(2, 9),
-      email,
-      user_metadata: { name },
-      created_at: new Date().toISOString(),
-    };
-    setUser(newUser);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newUser));
-    return { error: null };
+    try {
+      const res = await AuthAPI.register({ name, email, password });
+      const apiUser = res.data.user;
+      const token = res.data.token;
+      const mapped: User = { id: apiUser.id || apiUser._id, name: apiUser.name, email: apiUser.email, role: apiUser.role };
+      setUser(mapped);
+      localStorage.setItem(USER_KEY, JSON.stringify(mapped));
+      localStorage.setItem(TOKEN_KEY, token);
+      return { error: null };
+    } catch (error: any) {
+      return { error };
+    }
   };
 
   const signIn = async (email: string, password: string) => {
-    const existingUser: User = {
-      id: Math.random().toString(36).substr(2, 9),
-      email,
-      user_metadata: { name: 'Demo User' },
-      created_at: new Date().toISOString(),
-    };
-    setUser(existingUser);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(existingUser));
-    return { error: null };
+    try {
+      const res = await AuthAPI.login({ email, password });
+      const apiUser = res.data.user;
+      const token = res.data.token;
+      const mapped: User = { id: apiUser.id || apiUser._id, name: apiUser.name, email: apiUser.email, role: apiUser.role };
+      setUser(mapped);
+      localStorage.setItem(USER_KEY, JSON.stringify(mapped));
+      localStorage.setItem(TOKEN_KEY, token);
+      return { error: null };
+    } catch (error: any) {
+      return { error };
+    }
   };
 
   const signOut = async () => {
     setUser(null);
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(TOKEN_KEY);
   };
 
   return (

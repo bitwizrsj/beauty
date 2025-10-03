@@ -2,10 +2,19 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, Heart, Star } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
-import type { Product } from '../data/products';
-
 interface ProductCardProps {
-  product: Product;
+  product: {
+    id: string;
+    name: string;
+    price: number;
+    images: string[];
+    brand?: string;
+    rating?: number;
+    reviews?: number;
+    originalPrice?: number;
+    inStock?: boolean;
+    category?: string;
+  };
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
@@ -64,21 +73,25 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </h3>
 
           <div className="flex items-center mb-2">
-            <div className="flex items-center">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  className={`w-4 h-4 ${
-                    i < Math.floor(product.rating)
-                      ? 'text-yellow-400 fill-yellow-400'
-                      : 'text-gray-300'
-                  }`}
-                />
-              ))}
-            </div>
-            <span className="text-sm text-gray-600 ml-2">
-              ({product.reviews})
-            </span>
+            {typeof product.rating === 'number' && (
+              <>
+                <div className="flex items-center">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`w-4 h-4 ${
+                        i < Math.floor(product.rating || 0)
+                          ? 'text-yellow-400 fill-yellow-400'
+                          : 'text-gray-300'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className="text-sm text-gray-600 ml-2">
+                  ({product.reviews || 0})
+                </span>
+              </>
+            )}
           </div>
 
           <div className="flex items-center justify-between">

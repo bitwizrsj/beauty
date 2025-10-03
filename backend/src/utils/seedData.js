@@ -34,10 +34,56 @@ const importData = async () => {
     const createdCategories = await Category.create(data.categories);
     console.log(`${createdCategories.length} categories created`);
 
-    const productsWithCategory = data.products.map(product => ({
-      ...product,
-      category: createdCategories[0]._id
-    }));
+    // Map products to appropriate categories based on tags
+    const productsWithCategory = data.products.map(product => {
+      // Find the best matching category based on product tags
+      let categoryId = createdCategories[0]._id; // default fallback
+      
+      if (product.tags && product.tags.length > 0) {
+        // Try to find a matching category by name
+        const matchingCategory = createdCategories.find(cat => {
+          const categoryName = cat.name.toLowerCase();
+          return product.tags.some(tag => 
+            tag.toLowerCase().includes(categoryName) || 
+            categoryName.includes(tag.toLowerCase())
+          );
+        });
+        
+        if (matchingCategory) {
+          categoryId = matchingCategory._id;
+        } else {
+          // Fallback to main categories based on primary tag
+          const primaryTag = product.tags[0].toLowerCase();
+          if (primaryTag.includes('skincare') || primaryTag.includes('serum') || primaryTag.includes('cleanser') || primaryTag.includes('moisturizer') || primaryTag.includes('cream')) {
+            const skincareCat = createdCategories.find(c => c.name === 'Skincare');
+            if (skincareCat) categoryId = skincareCat._id;
+          } else if (primaryTag.includes('makeup') || primaryTag.includes('lipstick') || primaryTag.includes('foundation') || primaryTag.includes('mascara') || primaryTag.includes('eyeshadow')) {
+            const makeupCat = createdCategories.find(c => c.name === 'Makeup');
+            if (makeupCat) categoryId = makeupCat._id;
+          } else if (primaryTag.includes('hair') || primaryTag.includes('shampoo') || primaryTag.includes('conditioner') || primaryTag.includes('oil')) {
+            const hairCat = createdCategories.find(c => c.name === 'Hair Care');
+            if (hairCat) categoryId = hairCat._id;
+          } else if (primaryTag.includes('fragrance') || primaryTag.includes('perfume') || primaryTag.includes('cologne')) {
+            const fragranceCat = createdCategories.find(c => c.name === 'Fragrance');
+            if (fragranceCat) categoryId = fragranceCat._id;
+          } else if (primaryTag.includes('body') || primaryTag.includes('lotion') || primaryTag.includes('wash')) {
+            const bodyCat = createdCategories.find(c => c.name === 'Bath & Body');
+            if (bodyCat) categoryId = bodyCat._id;
+          } else if (primaryTag.includes('tools') || primaryTag.includes('brush') || primaryTag.includes('roller')) {
+            const toolsCat = createdCategories.find(c => c.name === 'Tools & Brushes');
+            if (toolsCat) categoryId = toolsCat._id;
+          } else if (primaryTag.includes('gift')) {
+            const giftCat = createdCategories.find(c => c.name === 'Gifts & Value Sets');
+            if (giftCat) categoryId = giftCat._id;
+          }
+        }
+      }
+      
+      return {
+        ...product,
+        category: categoryId
+      };
+    });
 
     const createdProducts = await Product.create(productsWithCategory);
     console.log(`${createdProducts.length} products created`);
